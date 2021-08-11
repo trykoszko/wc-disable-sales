@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Main WC Disable Sales plugin class
+ */
 class WC_Disable_Sales
 {
     public string $version;
@@ -7,13 +10,6 @@ class WC_Disable_Sales
     public function __construct()
     {
         $this->version = WC_DISABLE_SALES_VERSION;
-    }
-
-    /**
-     * Run plugin
-     */
-    public function run() : void
-    {
         $this->init_hooks();
     }
 
@@ -39,13 +35,6 @@ class WC_Disable_Sales
         }
 
         /**
-         * Check if plugin is enabled from settings
-         */
-        if (!$this->get_option('enable_plugin') == 'yes') {
-            return;
-        }
-
-        /**
          * Add WC options page section link
          */
         add_filter('woocommerce_settings_tabs_array', [$this, 'add_wc_options_page_section_link'], 50);
@@ -55,6 +44,13 @@ class WC_Disable_Sales
          */
         add_filter('woocommerce_settings_tabs_wc_disable_sales', [$this, 'add_wc_options_page_section']);
         add_filter('woocommerce_update_options_wc_disable_sales', [$this, 'update_wc_options_page_settings']);
+
+        /**
+         * Check if plugin is enabled from settings
+         */
+        if (!$this->get_option('enable_plugin') || $this->get_option('enable_plugin') == 'no') {
+            return;
+        }
 
         /**
          * Make all products not purchasable
@@ -96,47 +92,56 @@ class WC_Disable_Sales
         return $sections;
     }
 
+    /**
+     * Handle getting our custom WC settings
+     */
     public function wc_get_settings() : array
     {
         $settings = array(
             'section_title' => array(
-                'name'     => __('WC Disable Sales', WC_DISABLE_SALES_TEXTDOMAIN),
-                'type'     => 'title',
-                'desc'     => __('Allows you to disable sales in given dates.', WC_DISABLE_SALES_TEXTDOMAIN),
-                'id'       => 'wc_settings_tab_wc_disable_sales_title'
+                'name' => __('WC Disable Sales', WC_DISABLE_SALES_TEXTDOMAIN),
+                'type' => 'title',
+                'desc' => __('Allows you to disable sales in given dates.', WC_DISABLE_SALES_TEXTDOMAIN),
+                'id' => 'wc_settings_tab_wc_disable_sales_title'
             ),
             'enable_plugin' => array(
                 'name' => __('Enable plugin?', WC_DISABLE_SALES_TEXTDOMAIN),
                 'type' => 'checkbox',
                 'desc' => __('Select to enable the plugin functionality.', WC_DISABLE_SALES_TEXTDOMAIN),
-                'id'   => 'wc_settings_wc_disable_sales_enable_plugin'
+                'id' => 'wc_settings_wc_disable_sales_enable_plugin'
             ),
             'date_from' => array(
                 'name' => __('Shop will be disabled from...', WC_DISABLE_SALES_TEXTDOMAIN),
                 'type' => 'date',
-                'id'   => 'wc_settings_wc_disable_sales_date_from'
+                'id' => 'wc_settings_wc_disable_sales_date_from'
             ),
             'date_to' => array(
                 'name' => __('Shop will be disabled until...', WC_DISABLE_SALES_TEXTDOMAIN),
                 'type' => 'date',
-                'id'   => 'wc_settings_wc_disable_sales_date_to'
+                'id' => 'wc_settings_wc_disable_sales_date_to'
             ),
+            'repeat' => [
+                'name' => __('Repeat', WC_DISABLE_SALES_TEXTDOMAIN),
+                'type' => 'checkbox',
+                'desc' => __('Select to turn off sales every year', WC_DISABLE_SALES_TEXTDOMAIN),
+                'id' => 'wc_settings_wc_disable_sales_repeat'
+            ],
             'always_show_notice' => array(
                 'name' => __('Always show notice?', WC_DISABLE_SALES_TEXTDOMAIN),
                 'type' => 'checkbox',
-                'desc' => __('Select to enable the shop disabled notice on every page.', WC_DISABLE_SALES_TEXTDOMAIN),
-                'id'   => 'wc_settings_wc_disable_sales_always_show_notice'
+                'desc' => __('Select to enable "Shop turned off" notice on every page', WC_DISABLE_SALES_TEXTDOMAIN),
+                'id' => 'wc_settings_wc_disable_sales_always_show_notice'
             ),
             'custom_notice_message' => array(
                 'name' => __('Custom notice message', WC_DISABLE_SALES_TEXTDOMAIN),
-                'type' => 'text',
+                'type' => 'textarea',
                 'desc' => __('Use shortcodes below to insert dates. Leave blank to use default. <br/><pre>[date_from]<br />[date_to]</pre>', WC_DISABLE_SALES_TEXTDOMAIN),
-                'id'   => 'wc_settings_wc_disable_sales_custom_notice_message',
+                'id' => 'wc_settings_wc_disable_sales_custom_notice_message',
                 'placeholder' => __('Shop is disabled from [date_from] to [date_to].', WC_DISABLE_SALES_TEXTDOMAIN)
             ),
             'section_end' => array(
-                 'type' => 'sectionend',
-                 'id' => 'wc_settings_tab_wc_disable_sales_end'
+                'type' => 'sectionend',
+                'id' => 'wc_settings_tab_wc_disable_sales_end'
             )
         );
         return apply_filters('wc_settings_wc_disable_sales_settings', $settings);
@@ -150,6 +155,9 @@ class WC_Disable_Sales
         woocommerce_admin_fields($this->wc_get_settings());
     }
 
+    /**
+     * Handle updating our custom WC settings
+     */
     public function update_wc_options_page_settings() : void
     {
         woocommerce_update_options($this->wc_get_settings());
@@ -208,19 +216,21 @@ class WC_Disable_Sales
         $closed_to = wp_date('j. F', $timestamp_to);
 
         $notice =
-            $this->get_option('show_custom_notice')
+            (!empty($this->get_option('custom_notice_message')))
                 ? str_replace(
                     ['[date_from]', '[date_to]'],
                     [$closed_from, $closed_to],
                     $this->get_option('custom_notice_message')
                 )
                 : sprintf(
-                    __('The shop is closed between %s and %s', WC_DISABLE_SALES_TEXTDOMAIN),
+                    __('The shop is closed between %s and %s.', WC_DISABLE_SALES_TEXTDOMAIN),
                     $closed_from,
                     $closed_to
                 );
 
-        wc_add_notice($notice, 'error');
+        if (!wc_has_notice($notice, 'error')) {
+            wc_add_notice($notice, 'error');
+        }
     }
 
     /**
@@ -245,16 +255,65 @@ class WC_Disable_Sales
      */
     private function is_shop_open() : bool
     {
-        $now = (new DateTime())->getTimestamp();
+        $now = new DateTime();
+        $now_timestamp = $now->getTimestamp();
 
-        $timestamp_from = (new DateTime($this->get_option('date_from')))->getTimestamp();
-        $timestamp_to = (new DateTime($this->get_option('date_to')))->getTimestamp();
+        $now_year = $now->format('Y');
+        $next_year = $now->modify('+1 year')->format('Y');
 
-        if (($now >= $timestamp_from) && ($now < $timestamp_to)) {
-            return true;
+        $date_from = new DateTime($this->get_option('date_from'));
+        $date_to = new DateTime($this->get_option('date_to'));
+
+        /**
+         * Check if the date frame repeats
+         */
+        if ($this->get_option('repeat') == 'yes') {
+            /**
+             * Prepare from date
+             */
+            $year_from = $date_from->format('Y');
+            $month_from = $date_from->format('m');
+            $day_from = $date_from->format('d');
+
+            /**
+             * Prepare to date
+             */
+            $month_to = $date_to->format('m');
+            $day_to = $date_to->format('d');
+            $year_to = $date_to->format('Y');
+
+            $from_in_current_year = (new DateTime("$now_year-$month_from-$day_from"))->getTimestamp();
+
+            /**
+             * Check if date_to is in the same calendar year as date_from
+             */
+            $breaks_year = $year_to > $year_from;
+            if ($breaks_year) {
+                $to_in_next_year = (new DateTime("$next_year-$month_to-$day_to"))->getTimestamp();
+
+                if (($now_timestamp >= $from_in_current_year) && ($now_timestamp < $to_in_next_year)) {
+                    return false;
+                }
+            } else {
+                $to_in_current_year = (new DateTime("$now_year-$month_to-$day_to"))->getTimestamp();
+
+                if (($now_timestamp >= $from_in_current_year) && ($now_timestamp < $to_in_current_year)) {
+                    return false;
+                }
+            }
+        } else {
+            $timestamp_from = $date_from->getTimestamp();
+            $timestamp_to = $date_to->getTimestamp();
+
+            if (($now_timestamp >= $timestamp_from) && ($now_timestamp < $timestamp_to)) {
+                return false;
+            }
         }
 
-        return false;
+        /**
+         * Shop is open if no above conditions are met
+         */
+        return true;
     }
 
     /**
@@ -275,7 +334,7 @@ class WC_Disable_Sales
      */
     public function show_shop_disabled_info_notice() : void
     {
-        if (!$this->is_shop_open()) {
+        if (!(is_cart() || is_checkout()) && !$this->is_shop_open()) {
             $this->print_closed_store_notice();
         }
     }

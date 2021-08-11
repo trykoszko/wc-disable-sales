@@ -25,13 +25,8 @@ if (!defined('WC_DISABLE_SALES_PLUGIN_NAME')) define('WC_DISABLE_SALES_PLUGIN_NA
 if (!defined('WC_DISABLE_SALES_TEXTDOMAIN')) define('WC_DISABLE_SALES_TEXTDOMAIN', 'wc-disable-sales');
 
 /**
- * Initialize plugin
+ * Get main plugin class
  */
-function init_wc_disable_sales()
-{
-    require_once(__DIR__ . "/src/class-wc-disable-sales.php");
+require_once(__DIR__ . "/src/class-wc-disable-sales.php");
 
-    $plugin = new WC_Disable_Sales();
-    $plugin->run();
-}
-init_wc_disable_sales();
+new WC_Disable_Sales();
