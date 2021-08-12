@@ -3,7 +3,7 @@
  * Plugin Name:       Disable Sales for WooCommerce
  * Plugin URI:        https://github.com/trykoszko/wc-disable-sales
  * Description:       Allows to temporarily disable WooCommerce shop abilities in given timeframe
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Michal Trykoszko
  * Author URI:        https://github.com/trykoszko
  * License:           GPL version 3 or any later version
