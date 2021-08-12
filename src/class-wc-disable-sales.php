@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Main WC Disable Sales plugin class
+ * Main Disable Sales for WooCommerce plugin class
  */
 class WC_Disable_Sales
 {
@@ -99,7 +99,7 @@ class WC_Disable_Sales
     {
         $settings = array(
             'section_title' => array(
-                'name' => __('WC Disable Sales', WC_DISABLE_SALES_TEXTDOMAIN),
+                'name' => WC_DISABLE_SALES_PLUGIN_NAME,
                 'type' => 'title',
                 'desc' => __('Allows you to disable sales in given dates.', WC_DISABLE_SALES_TEXTDOMAIN),
                 'id' => 'wc_settings_tab_wc_disable_sales_title'
@@ -194,7 +194,7 @@ class WC_Disable_Sales
             '<div class="%1$s"><p>%2$s</p><p>%3$s</p></div>',
             esc_attr('notice notice-error'),
             __(
-                '<strong>WC Disable Sales</strong> plugin is enabled but needs <strong>WooCommerce</strong> in order to work.',
+                '<strong>' . WC_DISABLE_SALES_PLUGIN_NAME . '</strong> plugin is enabled but needs <strong>WooCommerce</strong> in order to work.',
                 WC_DISABLE_SALES_TEXTDOMAIN
             ),
             sprintf(

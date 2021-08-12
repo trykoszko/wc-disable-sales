@@ -1,11 +1,12 @@
-=== WC Disable Sales ===
+=== Disable Sales for WooCommerce ===
 Contributors: michaltry
 Tags: woocommerce, disable, sales, vacation, temporarily, off
 Tested up to: 5.8
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-WC Disable Sales adds the ability of temporarily disabling shop functionalities in WooCommerce.
+Disable Sales for WooCommerce adds the ability of temporarily disabling shop functionalities in WooCommerce.
 
 == Description ==
 
@@ -44,6 +45,9 @@ Yes, you can insert custom dates between which the WooCommerce shop functionalit
 2. A notice saying that shop is currently off.
 
 == Changelog ==
+
+= 1.0.1 =
+* Renamed the plugin.
 
 = 1.0.0 =
 * Created a working plugin.
